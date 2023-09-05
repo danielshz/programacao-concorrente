@@ -4,10 +4,11 @@
 #include <math.h>
 #include "timer.h"
 
+int i_global = 0;
 pthread_mutex_t mutex;
 
 typedef struct {
-   long long int inicio, fim, salto;
+   long long int N;
    long long int* quantidadePrimos;
 } t_Args;
 
@@ -30,15 +31,27 @@ int ehPrimo(long long int n) {
 }
 
 void* QuantidadeDePrimos(void *arg) {
+    int i_local, quantidadePrimos = 0;
     t_Args* args = (t_Args *) arg;
 
-    for(long long int i = args->inicio; i < args->fim; i += args->salto) {
-        if(ehPrimo(i)) {
-            pthread_mutex_lock(&mutex);
-            *(args->quantidadePrimos) += 1;
-            pthread_mutex_unlock(&mutex);
-        }
+    pthread_mutex_lock(&mutex); 
+    i_local = i_global;
+    i_global++;
+    pthread_mutex_unlock(&mutex);
+
+    while(i_local < args->N) {
+        if(ehPrimo(i_local))
+            quantidadePrimos++;
+        
+        pthread_mutex_lock(&mutex); 
+        i_local = i_global;
+        i_global++;
+        pthread_mutex_unlock(&mutex);
     }
+
+    pthread_mutex_lock(&mutex); 
+    *(args->quantidadePrimos) += quantidadePrimos;
+    pthread_mutex_unlock(&mutex);
 
     pthread_exit(NULL);
 }
@@ -79,9 +92,7 @@ int main(int argc, char* argv[]) {
     GET_TIME(inicio);
 
     for(int i = 0; i < NTHREADS; i++) {
-        args[i].inicio = N / NTHREADS * i + 1;
-        args[i].fim = N / NTHREADS * (i + 1) + 1;
-        args[i].salto = 1;
+        args[i].N = N;
         args[i].quantidadePrimos = &quantidadePrimos;
     
         if (pthread_create(&tid_sistema[i], NULL, QuantidadeDePrimos, (void*) &args[i])) {
