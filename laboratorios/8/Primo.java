@@ -1,4 +1,3 @@
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.lang.Math;
@@ -38,7 +37,7 @@ class FilaTarefas {
             queue.notifyAll();
         }
 
-        for (int i = 0; i < nThreads; i++) {
+        for(int i = 0; i < nThreads; i++) {
             try {
                 threads[i].join(); 
             } catch(InterruptedException e) {
@@ -59,7 +58,7 @@ class FilaTarefas {
                         } catch(InterruptedException ignored) {}
                     }
 
-                    if (queue.isEmpty() && shutdown)
+                    if(queue.isEmpty() && shutdown)
                         return;  
 
                     r = (Runnable) queue.removeFirst();
@@ -67,7 +66,6 @@ class FilaTarefas {
 
                 try {
                     r.run();
-                
                 } catch (RuntimeException e) {}
             } 
         } 
@@ -135,18 +133,15 @@ class PrimoSequencial {
             }
         }
 
-
         return quant;
     }
 }
 
 class Contador {
     private AtomicLong atomic;
-    Hashtable<Integer, Integer> indices;
 
     public Contador(long valorInicial) {
         this.atomic = new AtomicLong(valorInicial);
-        this.indices = new Hashtable<>();
     }
 
     public long get() {
